@@ -8,6 +8,15 @@ const Order = mongoose.model('Order', {
     amount: {
         type: String,
         required: true
+    },
+    status: {
+        type: String,
+        default: 'NOT ACCEPTED'
+    },
+    customer: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
     }
 })
 

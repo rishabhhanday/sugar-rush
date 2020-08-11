@@ -6,7 +6,6 @@ const router = new express.Router();
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
-
     try {
         const token = await user.generateJWT()
 
@@ -25,13 +24,18 @@ router.post('/users/login', async (req, res) => {
         res.send({ user, token })
     }
     catch (e) {
-        console.log(e)
         res.status(400).send(e)
     }
 })
 
-router.get('/users/me', auth, (req, res) => {
-    res.send(req.user)
+router.get('/users/me', auth, async (req, res) => {
+    try {
+        await req.user.populate('orders').execPopulate()
+        res.send({ user: req.user, orders: req.user.orders })
+    }
+    catch (e) {
+        res.status(500).send()
+    }
 })
 
 router.delete('/users/logout', auth, async (req, res) => {
