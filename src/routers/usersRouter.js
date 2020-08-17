@@ -1,8 +1,8 @@
 const express = require('express')
 const User = require('../model/User')
 const auth = require('../middleware/auth')
-const router = new express.Router();
 
+const router = new express.Router();
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
@@ -30,8 +30,7 @@ router.post('/users/login', async (req, res) => {
 
 router.get('/users/me', auth, async (req, res) => {
     try {
-        await req.user.populate('orders').execPopulate()
-        res.send({ user: req.user, orders: req.user.orders })
+        res.send(req.user)
     }
     catch (e) {
         res.status(500).send()

@@ -37,10 +37,6 @@ const userSchema = new mongoose.Schema({
         required: true,
         type: String
     },
-    role: {
-        type: String,
-        default: 'USER',
-    },
     tokens: [{
         token: {
             type: String
@@ -92,12 +88,6 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
     return user
 }
-
-userSchema.virtual('orders', {
-    ref: 'Order',
-    localField: '_id',
-    foreignField: 'customer'
-})
 
 const User = mongoose.model('User', userSchema)
 

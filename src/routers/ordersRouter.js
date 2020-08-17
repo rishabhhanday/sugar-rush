@@ -4,59 +4,61 @@ const express = require('express')
 
 const router = new express.Router()
 
-router.post('/orders', auth, async (req, res) => {
-    const orderObj = {
-        ...req.body,
-        customer: req.user._id
-    }
-    const order = new Order(orderObj)
+router.post('/orders', async (req, res) => {
+    try {
+        const order = new Order(req.body)
+        await order.save()
+        await order.populate('product').execPopulate()
 
-    await order.save()
-    res.status(201).send(order)
+        res.status(201).send(order)
+    } catch (e) {
+        res.status(500).send(e)
+    }
 })
+
 
 router.get('/orders', auth, async (req, res) => {
     try {
-        if (req.user.role === 'ADMIN') {
-            const orders = await Order.find({})
+        const orders = await Order.find({})
 
-            return res.send(orders)
+        const ordersResponse = []
+        for (const order of orders) {
+            await order.populate('product').execPopulate()
+            ordersResponse.push(order)
         }
 
-        const orders = await Order.find({ customer: req.user._id })
-        return res.send(orders)
-    }
-    catch (e) {
-        res.status(500).send()
+        res.send(ordersResponse)
+    } catch (e) {
+        res.status(500).send(e)
     }
 })
 
-router.get('/orders/:id', auth, async (req, res) => {
+router.get('/orders/:id', async (req, res) => {
     try {
-        const order = await Order.findOne({ _id: req.params.id, customer: req.user._id })
+        const order = await Order.findById(req.params.id)
 
         if (!order) {
-            return res.status(400).send()
+            res.status(401).send()
         }
-        await order.populate('customer').execPopulate()
+
+        await order.populate('product').execPopulate()
         res.send(order)
     } catch (e) {
-        console.log(e)
-        res.status(500).send()
+        res.status(400).send(e)
     }
 })
 
-router.delete('/orders/:id', auth, async (req, res) => {
+router.put('/orders/:id', auth, async (req, res) => {
     try {
-        const order = await Order.findOneAndDelete({ _id: req.params.id, customer: req.user._id })
-
+        const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })
         if (!order) {
-            return res.status(400).send()
+            res.status(401).send()
         }
-        await order.populate('customer').execPopulate()
+
+        await order.populate('product').execPopulate()
         res.send(order)
     } catch (e) {
-        res.status(500).send()
+        res.status(400).send(e)
     }
 })
 

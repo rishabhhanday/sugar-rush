@@ -1,22 +1,35 @@
 const mongoose = require('mongoose')
+const validator = require('validator')
 
 const Order = mongoose.model('Order', {
-    item: {
-        type: String,
-        required: true
-    },
-    amount: {
-        type: String,
-        required: true
-    },
     status: {
         type: String,
-        default: 'NOT ACCEPTED'
+        default: 'IN PROGRESS'
     },
-    customer: {
+    product: {
         type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true
+    },
+    email: {
+        type: String,
         required: true,
-        ref: 'User'
+        trim: true,
+        validate(val) {
+            if (!validator.isEmail(val)) {
+                throw new Error('Invalid email address.')
+            }
+        }
+    },
+    address: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    phoneNo: {
+        type: String,
+        required: true,
+        trim: true
     }
 })
 
